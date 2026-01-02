@@ -77,19 +77,72 @@ IF(WIN32)
 ELSE(WIN32)
   
   IF(UNIX) 
-    SET(GSL_CONFIG_PREFER_PATH 
-      "$ENV{GSL_DIR}/bin"
-      "$ENV{GSL_DIR}"
-      "$ENV{GSL_HOME}/bin" 
-      "$ENV{GSL_HOME}" 
-      CACHE STRING "preferred path to GSL (gsl-config)")
-    FIND_PROGRAM(GSL_CONFIG gsl-config
-      ${GSL_CONFIG_PREFER_PATH}
-      /usr/bin/
-      )
-    # MESSAGE("DBG GSL_CONFIG ${GSL_CONFIG}")
+    # First, try to find GSL manually in CMAKE_PREFIX_PATH (for universal builds)
+    # This takes precedence over gsl-config to ensure we use the correct architecture
+    # Also check CMAKE_LIBRARY_PATH and CMAKE_INCLUDE_PATH
+    SET(GSL_SEARCH_PATHS ${CMAKE_PREFIX_PATH})
+    IF(CMAKE_LIBRARY_PATH)
+      LIST(APPEND GSL_SEARCH_PATHS ${CMAKE_LIBRARY_PATH})
+    ENDIF()
+    IF(CMAKE_INCLUDE_PATH)
+      LIST(APPEND GSL_SEARCH_PATHS ${CMAKE_INCLUDE_PATH})
+    ENDIF()
     
-    IF (GSL_CONFIG) 
+    IF(GSL_SEARCH_PATHS)
+      MESSAGE(STATUS "Searching for GSL in: ${GSL_SEARCH_PATHS}")
+      FIND_PATH(GSL_INCLUDE_DIR_MANUAL
+        NAMES gsl/gsl_cdf.h gsl/gsl_randist.h
+        PATHS ${GSL_SEARCH_PATHS}
+        PATH_SUFFIXES include
+        NO_DEFAULT_PATH
+        DOC "GSL header include dir"
+      )
+      
+      IF(GSL_INCLUDE_DIR_MANUAL)
+        MESSAGE(STATUS "Found GSL headers at: ${GSL_INCLUDE_DIR_MANUAL}")
+        FIND_LIBRARY(GSL_GSL_LIBRARY_MANUAL
+          NAMES gsl libgsl
+          PATHS ${GSL_SEARCH_PATHS}
+          PATH_SUFFIXES lib
+          NO_DEFAULT_PATH
+          DOC "GSL library"
+        )
+        
+        FIND_LIBRARY(GSL_GSLCBLAS_LIBRARY_MANUAL
+          NAMES gslcblas libgslcblas cblas
+          PATHS ${GSL_SEARCH_PATHS}
+          PATH_SUFFIXES lib
+          NO_DEFAULT_PATH
+          DOC "GSL cblas library"
+        )
+        
+        IF(GSL_GSL_LIBRARY_MANUAL AND GSL_GSLCBLAS_LIBRARY_MANUAL)
+          SET(GSL_INCLUDE_DIR ${GSL_INCLUDE_DIR_MANUAL} CACHE STRING INTERNAL)
+          SET(GSL_LIBRARIES ${GSL_GSL_LIBRARY_MANUAL} ${GSL_GSLCBLAS_LIBRARY_MANUAL})
+          GET_FILENAME_COMPONENT(GSL_PREFIX ${GSL_INCLUDE_DIR_MANUAL} DIRECTORY)
+          MESSAGE(STATUS "Using GSL from ${GSL_PREFIX} (found via CMAKE_PREFIX_PATH)")
+          SET(GSL_FOUND 1)
+          INCLUDE(FindPackageHandleStandardArgs)
+          FIND_PACKAGE_HANDLE_STANDARD_ARGS(GSL DEFAULT_MSG GSL_INCLUDE_DIR GSL_GSL_LIBRARY_MANUAL GSL_GSLCBLAS_LIBRARY_MANUAL)
+        ENDIF(GSL_GSL_LIBRARY_MANUAL AND GSL_GSLCBLAS_LIBRARY_MANUAL)
+      ENDIF(GSL_INCLUDE_DIR_MANUAL)
+    ENDIF(GSL_SEARCH_PATHS)
+    
+    # If not found manually, fall back to gsl-config
+    IF(NOT GSL_FOUND)
+      SET(GSL_CONFIG_PREFER_PATH 
+        "$ENV{GSL_DIR}/bin"
+        "$ENV{GSL_DIR}"
+        "$ENV{GSL_HOME}/bin" 
+        "$ENV{GSL_HOME}" 
+        CACHE STRING "preferred path to GSL (gsl-config)")
+      FIND_PROGRAM(GSL_CONFIG gsl-config
+        ${GSL_CONFIG_PREFER_PATH}
+        /usr/bin/
+        )
+      # MESSAGE("DBG GSL_CONFIG ${GSL_CONFIG}")
+      
+      IF (GSL_CONFIG) 
       # set CXXFLAGS to be fed into CXX_FLAGS by the user:
       EXEC_PROGRAM(${GSL_CONFIG}
 	ARGS "--cflags"
@@ -128,22 +181,27 @@ ELSE(WIN32)
       #      MESSAGE("DBG  GSL_LINK_DIRECTORIES=${GSL_LINK_DIRECTORIES}")
       #      MESSAGE("DBG  GSL_EXE_LINKER_FLAGS=${GSL_EXE_LINKER_FLAGS}")
 
-      #      ADD_DEFINITIONS("-DHAVE_GSL")
-      #      SET(GSL_DEFINITIONS "-DHAVE_GSL")
-      MARK_AS_ADVANCED(
-        GSL_CXX_FLAGS
-        GSL_INCLUDE_DIR
-        GSL_LIBRARIES
-        GSL_LINK_DIRECTORIES
-        GSL_DEFINITIONS
-      )
-      MESSAGE(STATUS "Using GSL from ${GSL_PREFIX}")
+        #      ADD_DEFINITIONS("-DHAVE_GSL")
+        #      SET(GSL_DEFINITIONS "-DHAVE_GSL")
+        MARK_AS_ADVANCED(
+          GSL_CXX_FLAGS
+          GSL_INCLUDE_DIR
+          GSL_LIBRARIES
+          GSL_LINK_DIRECTORIES
+          GSL_DEFINITIONS
+        )
+        MESSAGE(STATUS "Using GSL from ${GSL_PREFIX}")
+        SET(GSL_FOUND 1)
+        
+      ELSE(GSL_CONFIG)
+        MESSAGE("FindGSL.cmake: gsl-config not found. Please set it manually. GSL_CONFIG=${GSL_CONFIG}")
+      ENDIF(GSL_CONFIG)
       
-    ELSE(GSL_CONFIG)
-      MESSAGE("FindGSL.cmake: gsl-config not found. Please set it manually. GSL_CONFIG=${GSL_CONFIG}")
-    ENDIF(GSL_CONFIG)
-    INCLUDE(FindPackageHandleStandardArgs)
-    FIND_PACKAGE_HANDLE_STANDARD_ARGS(GSL DEFAULT_MSG GSL_CONFIG)
+      IF(NOT GSL_FOUND)
+        INCLUDE(FindPackageHandleStandardArgs)
+        FIND_PACKAGE_HANDLE_STANDARD_ARGS(GSL DEFAULT_MSG GSL_CONFIG)
+      ENDIF(NOT GSL_FOUND)
+    ENDIF(NOT GSL_FOUND)
 
   ENDIF(UNIX)
 ENDIF(WIN32)

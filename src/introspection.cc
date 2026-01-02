@@ -18,14 +18,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-
 #include <iostream>
 #include <string>
 #include <regex>
 
-#include <gsl/gsl_version.h>             // GSL_VERSION
-#include <lcms2.h>                       // LCMS_VERSION
-#include <vigra/imageinfo.hxx>           // VIGRA_VERSION, impexListExtensions(), impexListFormats()
+#include <gsl/gsl_version.h>   // GSL_VERSION
+#include <lcms2.h>             // LCMS_VERSION
+#include <vigra/imageinfo.hxx> // VIGRA_VERSION, impexListExtensions(), impexListFormats()
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -38,9 +37,9 @@
 #include "filespec.h"
 #include "global.h"
 #include "signature.h"
-#include "dynamic_loader.h"    // HAVE_DYNAMICLOADER_IMPL
-#include "openmp_def.h"        // OPENMP
-#include "opencl.h"            // OPENCL
+#include "dynamic_loader.h" // HAVE_DYNAMICLOADER_IMPL
+#include "openmp_def.h"     // OPENMP
+#include "opencl.h"         // OPENCL
 
 #include "introspection.h"
 
@@ -52,11 +51,10 @@ extern const std::string command;
 extern Signature sig;
 extern int Verbose;
 
-
 namespace introspection
 {
     void
-    printVersion(int argc, char** argv)
+    printVersion(int argc, char **argv)
     {
         std::cout << command << " " << VERSION << "\n\n";
 
@@ -76,17 +74,12 @@ namespace introspection
 
 #ifdef OPENMP
             const bool have_dynamic = have_openmp_dynamic();
-            std::cout <<
-                "Extra feature: OpenMP: yes\n" <<
-                "  - version " << OPENMP_YEAR << '-' << OPENMP_MONTH << "\n" <<
-                "  - " << (have_dynamic ? "" : "no ") <<
-                "support for dynamic adjustment of the number of threads;\n" <<
-                "    dynamic adjustment " <<
-                (have_dynamic && omp_get_dynamic() ? "enabled" : "disabled") << " by default\n" <<
-                "  - using " <<
-                omp_get_num_procs() << " processor" << (omp_get_num_procs() >= 2 ? "s" : "") << " and up to " <<
-                omp_get_max_threads() << " thread" << (omp_get_max_threads() >= 2 ? "s" : "") << "\n" <<
-                "  - allocating thread-local dynamic memory with " << OMP_MALLOC_FUNCTIONS << "\n";
+            std::cout << "Extra feature: OpenMP: yes\n"
+                      << "  - version " << OPENMP_YEAR << '-' << OPENMP_MONTH << "\n"
+                      << "  - " << (have_dynamic ? "" : "no ") << "support for dynamic adjustment of the number of threads;\n"
+                      << "    dynamic adjustment " << (have_dynamic && omp_get_dynamic() ? "enabled" : "disabled") << " by default\n"
+                      << "  - using " << omp_get_num_procs() << " processor" << (omp_get_num_procs() >= 2 ? "s" : "") << " and up to " << omp_get_max_threads() << " thread" << (omp_get_max_threads() >= 2 ? "s" : "") << "\n"
+                      << "  - allocating thread-local dynamic memory with " << OMP_MALLOC_FUNCTIONS << "\n";
 #else
             std::cout << "Extra feature: OpenMP: no\n";
 #endif
@@ -101,8 +94,8 @@ namespace introspection
             {
                 ocl::print_opencl_information();
             }
-            __except(GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND) ||
-                GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_PROC_NOT_FOUND))
+            __except (GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND) ||
+                      GetExceptionCode() == VcppException(ERROR_SEVERITY_ERROR, ERROR_PROC_NOT_FOUND))
             {
                 std::cout << "                       but not available on this system\n";
             }
@@ -123,20 +116,18 @@ namespace introspection
             std::cout << "\n";
         }
 
-        std::cout <<
-            "Copyright (C) 2004-2009 Andrew Mihal.\n" <<
-            "Copyright (C) 2009-2017 Christoph Spiel.\n" <<
-            "\n" <<
-            "License GPLv2+: GNU GPL version 2 or later <http://www.gnu.org/licenses/gpl.html>\n" <<
-            "This is free software: you are free to change and redistribute it.\n" <<
-            "There is NO WARRANTY, to the extent permitted by law.\n" <<
-            "\n" <<
-            "Written by Andrew Mihal, Christoph Spiel and others." <<
-            std::endl;
+        std::cout << "Copyright (C) 2004-2009 Andrew Mihal.\n"
+                  << "Copyright (C) 2009-2017 Christoph Spiel.\n"
+                  << "Copyright (C) 2026 Rifki Nurmansyah.\n"
+                     "\n"
+                  << "License GPLv2+: GNU GPL version 2 or later <http://www.gnu.org/licenses/gpl.html>\n"
+                  << "This is free software: you are free to change and redistribute it.\n"
+                  << "There is NO WARRANTY, to the extent permitted by law.\n"
+                  << "\n"
+                  << "Written by Andrew Mihal, Christoph Spiel, Rifki Nurmansyah and others." << std::endl;
 
         exit(0);
     }
-
 
     // With the exception of TIFF, VIFF, PNG, and PNM all file types
     // store only 1 byte (gray scale and mapped RGB) or 3 bytes (RGB)
@@ -164,24 +155,24 @@ namespace introspection
         formats = std::regex_replace(formats, space, replacement);
         extensions = std::regex_replace(extensions, space, replacement);
 
-        std::cout <<
-            "Following image formats are supported by " << command << ":\n" <<
-            "  " << formats << "\n" <<
-            "It automatically recognizes the image file extensions:\n" <<
-            "  " << extensions << "\n" <<
-            "and -- where supported by the image format -- accepts per-channel depths:\n" <<
+        std::cout << "Following image formats are supported by " << command << ":\n"
+                  << "  " << formats << "\n"
+                  << "It automatically recognizes the image file extensions:\n"
+                  << "  " << extensions << "\n"
+                  << "and -- where supported by the image format -- accepts per-channel depths:\n"
+                  <<
 #ifndef DEBUG_8BIT_ONLY
-            "  " << "8 bits unsigned integral\n" <<
+            "  " << "8 bits unsigned integral\n"
+                  <<
 #endif
-            "  " << "16 bits unsigned or signed integral\n" <<
-            "  " << "32 bits unsigned or signed integral\n" <<
-            "  " << "32 bits floating-point\n" <<
-            "  " << "64 bits floating-point\n" <<
-            std::endl;
+            "  " << "16 bits unsigned or signed integral\n"
+                  << "  " << "32 bits unsigned or signed integral\n"
+                  << "  " << "32 bits floating-point\n"
+                  << "  " << "64 bits floating-point\n"
+                  << std::endl;
 
         exit(0);
     }
-
 
     void
     printSignature()
@@ -193,7 +184,6 @@ namespace introspection
         exit(0);
     }
 
-
     void
     printGlobbingAlgos()
     {
@@ -202,22 +192,20 @@ namespace introspection
         std::cout << "Following globbing algorithms are supported:\n";
         for (auto i = algos.begin(); i != algos.end(); ++i)
         {
-            std::cout <<
-                "  " << i->first << "\n" <<
-                "    " << i->second << "\n";
+            std::cout << "  " << i->first << "\n"
+                      << "    " << i->second << "\n";
         }
         std::cout << std::endl;
 
         exit(0);
     }
 
-
     void
     printSoftwareComponents()
     {
         std::cout << "Compiler\n  " <<
-            // IMPLEMENTATION NOTE: Order matters as both CLang and ICC
-            // identify themselves as GCC, too.
+        // IMPLEMENTATION NOTE: Order matters as both CLang and ICC
+        // identify themselves as GCC, too.
 #if defined(__clang__)
             "clang++ " << __clang_major__ << '.' << __clang_minor__ << '.' << __clang_patchlevel__ <<
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
@@ -235,45 +223,57 @@ namespace introspection
 #endif
             "\n" <<
 #ifdef OPENMP
-            "  implementing OpenMP standard of " << _OPENMP / 100 << '-' << _OPENMP % 100 << "\n" <<
+            "  implementing OpenMP standard of " << _OPENMP / 100 << '-' << _OPENMP % 100 << "\n"
+                  <<
 #endif
             "\n";
 
 #ifdef OPENCL
-        std::cout << "OpenCL APIs\n" <<
+        std::cout << "OpenCL APIs\n"
+                  <<
 #ifdef CL_VERSION_1_0
-            "  1.0\n" <<
+            "  1.0\n"
+                  <<
 #endif
 #ifdef CL_VERSION_1_1
-            "  1.1\n" <<
+            "  1.1\n"
+                  <<
 #endif
 #ifdef CL_VERSION_1_2
-            "  1.2\n" <<
+            "  1.2\n"
+                  <<
 #endif
 #ifdef CL_VERSION_1_3
-            "  1.3\n" <<
+            "  1.3\n"
+                  <<
 #endif
 #ifdef CL_VERSION_2_0
-            "  2.0\n" <<
+            "  2.0\n"
+                  <<
 #endif
 #ifdef CL_VERSION_2_1
-            "  2.1\n" <<
+            "  2.1\n"
+                  <<
 #endif
             "\n";
 #endif // OPENCL
 
-        std::cout << "Libraries\n" <<
+        std::cout << "Libraries\n"
+                  <<
 #ifdef HAVE_EXIV2
-            "  Exif2:      " << EXIV2_MAJOR_VERSION << '.' << EXIV2_MINOR_VERSION << '.' << EXIV2_PATCH_VERSION << "\n" <<
+            "  Exif2:      " << EXIV2_MAJOR_VERSION << '.' << EXIV2_MINOR_VERSION << '.' << EXIV2_PATCH_VERSION << "\n"
+                  <<
 #endif
-            "  GSL:        " << GSL_VERSION << "\n" <<
+            "  GSL:        " << GSL_VERSION << "\n"
+                  <<
             //"  JPEG:       " << "\n" <<
-            "  Little CMS: " << LCMS_VERSION / 1000 << '.' << (LCMS_VERSION / 10) % 100 << '.' << LCMS_VERSION % 10 << "\n" <<
+            "  Little CMS: " << LCMS_VERSION / 1000 << '.' << (LCMS_VERSION / 10) % 100 << '.' << LCMS_VERSION % 10 << "\n"
+                  <<
             //"  PNG:        " << "\n" <<
             //"  OpenEXR:    " << "\n" <<
             //"  TIFF:       " << "\n" <<
-            "  Vigra:      " << VIGRA_VERSION << "\n" <<
-            std::endl;
+            "  Vigra:      " << VIGRA_VERSION << "\n"
+                  << std::endl;
 
         exit(0);
     }

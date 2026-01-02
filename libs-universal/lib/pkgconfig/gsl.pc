@@ -1,0 +1,11 @@
+prefix=/Users/zxakito/Downloads/universal-libs/install
+exec_prefix=/Users/zxakito/Downloads/universal-libs/install
+libdir=/Users/zxakito/Downloads/universal-libs/install/lib
+includedir=/Users/zxakito/Downloads/universal-libs/install/include
+GSL_CBLAS_LIB=-lgslcblas
+
+Name: GSL
+Description: GNU Scientific Library
+Version: 2.8
+Libs: -L/Users/zxakito/Downloads/universal-libs/install/lib -lgsl ${GSL_CBLAS_LIB}  -lm 
+Cflags: -I/Users/zxakito/Downloads/universal-libs/install/include
