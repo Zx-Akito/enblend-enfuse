@@ -13,6 +13,9 @@ Win32 porting:
     Mark - mjz
     Ryan Sleevi <ryansleevi@users.sourceforge.net>
 
+MAC porting
+    ZxAkito - Rifki Nurmansyah
+
 
 CMake maintanance:
     Kornel Benko <kornelbenko@users.sourceforge.net>
