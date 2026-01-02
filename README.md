@@ -487,57 +487,102 @@ performance even more.
 To avoid direct linkage to the two X11 libraries Xmi and Xi add
 `"--without-x"` to the parameters of configure(1).
 
-### MacOSX
+### macOS
 
-#### Compiling on MacOSX
+#### Building Universal Binaries (Recommended Method)
 
-On MacOSX you can build Enblend/Enfuse with Fink and with MacPorts.
-This README only describes the MacPorts way.
+This method builds universal binaries (x86_64 + arm64) that work on both Intel and Apple Silicon Macs.
 
 ##### Prerequisites
 
-- **XCode**: Install the XCode version for your MacOSX version. Download it from http://developer.apple.com/tools/download/
+- **Xcode Command Line Tools**: Install from https://developer.apple.com/xcode/ or run:
 
-- **MacPorts**: Install MacPorts for your MacOSX version. Download it from http://www.macports.org/
+  ```bash
+  xcode-select --install
+  ```
 
-##### Provide necessary dependencies
+- **CMake**: Required for building. Install via Homebrew:
 
-From the command line:
+  ```bash
+  brew install cmake
+  ```
+
+  Or download from https://cmake.org/
+
+- **Universal Libraries**: All required universal dependency libraries must be placed in the `libs-universal/` directory. The script expects:
+  - libgsl.dylib
+  - liblcms2.dylib
+  - libtiff.dylib
+  - libjpeg.dylib
+  - libpng.dylib
+  - libvigraimpex.dylib
+
+##### Build Using the Build Script
+
+The easiest way to build universal binaries is using the provided build script:
 
 ```bash
-sudo port install make lcms boost jpeg tiff libpng OpenEXR mercurial
+cd enblend-enfuse
+./mac/build.sh
 ```
 
-Note that Enblend/Enfuse can be build via AutoConf/AutoMake and via
-CMake. The latter is experimental. If you want to build via CMake,
-add "cmake" to the previous command line after "mercurial" like this:
+The script will:
+
+1. Verify that all required universal libraries are present in `libs-universal/`
+2. Configure CMake to build universal binaries (x86_64 + arm64)
+3. Build both `enfuse` and `enblend` executables
+4. Verify that the resulting binaries are universal
+
+The built binaries will be located at:
+
+- `build/bin/enfuse`
+- `build/bin/enblend`
+
+##### Manual Build (Alternative Method)
+
+If you prefer to build manually or need custom configuration:
+
+```bash
+cd enblend-enfuse
+mkdir -p build
+cd build
+
+# Set paths to universal libraries
+export CMAKE_PREFIX_PATH="$(cd ../libs-universal && pwd)"
+export CMAKE_LIBRARY_PATH="$(cd ../libs-universal/lib && pwd)"
+export CMAKE_INCLUDE_PATH="$(cd ../libs-universal/include && pwd)"
+
+# Configure CMake for universal build
+cmake .. \
+    -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
+    -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH}" \
+    -DCMAKE_LIBRARY_PATH="${CMAKE_LIBRARY_PATH}" \
+    -DCMAKE_INCLUDE_PATH="${CMAKE_INCLUDE_PATH}" \
+    -DCMAKE_BUILD_TYPE=Release
+
+# Build
+make -j$(sysctl -n hw.ncpu)
+```
+
+##### Legacy Method (MacPorts)
+
+For the legacy MacPorts method, see the previous version of this README or use the following:
+
+**Prerequisites:**
+
+- Xcode
+- MacPorts (https://www.macports.org/)
+
+**Install dependencies:**
 
 ```bash
 sudo port install make lcms boost jpeg tiff libpng OpenEXR mercurial cmake
 ```
 
-##### Compile
-
-As MacPorts resides in /opt/local, which is not a standard
-library/binary/include path for most source packages, you need to
-specify that during the configure step.
-
-**Via AutoConf/AutoMake:**
+**Build:**
 
 ```bash
-cd enblend
-make --makefile=Makefile.scm
-mkdir build
-cd build
-CPPFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib ../configure
-make
-sudo make install
-```
-
-**Via CMake:**
-
-```bash
-cd enblend
+cd enblend-enfuse
 make --makefile=Makefile.scm
 mkdir build
 cd build
@@ -545,13 +590,6 @@ CPPFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib cmake ..
 make
 sudo make install
 ```
-
-This will install Enblend/Enfuse in /usr/local.
-
-##### Other compilation options
-
-Please also check the AutoConf/AutoMake and CMake variables for more
-build options.
 
 ### Windows
 
