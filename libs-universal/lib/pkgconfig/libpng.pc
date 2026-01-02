@@ -1,0 +1,12 @@
+prefix=/Users/zxakito/Downloads/universal-libs/install
+exec_prefix=/Users/zxakito/Downloads/universal-libs/install
+libdir=/Users/zxakito/Downloads/universal-libs/install/lib
+includedir=/Users/zxakito/Downloads/universal-libs/install/include/libpng18
+
+Name: libpng
+Description: Loads and saves PNG files
+Version: 1.8.0
+Requires.private: zlib
+Libs: -L${libdir} -lpng18
+Libs.private: -lz -lm
+Cflags: -I${includedir}
