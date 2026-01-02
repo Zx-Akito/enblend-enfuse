@@ -1,6 +1,6 @@
-Copyright (C) 2004-2009 Andrew Mihal.
-Copyright (C) 2009-2017 Christoph Spiel.
-Copyright (C) 2009-2017 Rifki Nurmansyah.
+- Copyright (C) 2004-2009 Andrew Mihal.
+- Copyright (C) 2009-2017 Christoph Spiel.
+- Copyright (C) 2026 Rifki Nurmansyah.
 
 This file is part of Enblend.
 
